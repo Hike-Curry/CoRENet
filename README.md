@@ -75,6 +75,6 @@ Citation information for this project will be added when available.
 
 ## Acknowledgements
 
-We thank the authors of [FIANet](https://github.com/Shaosifan/FIANet) for making their code available, portions of which are reused in this project. We also thank the dataset contributors for sharing their work.
+We thank the dataset contributors for sharing their work.
 
 Redistribution licensing and upstream notices will be finalized before public code release.
