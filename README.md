@@ -2,7 +2,7 @@
 
 # Language-Grounded Remote Sensing Segmentation
 
-This repository presents our research on referring remote sensing image segmentation, built on [FIANet](https://github.com/Shaosifan/FIANet). Given an image and a natural-language description, the model predicts the region corresponding to the described object. The current implementation combines language-conditioned visual features, candidate masks, and detail refinement, and supports RRSIS-D and RefSegRS.
+This repository presents our research on referring remote sensing image segmentation. Given an image and a natural-language description, the model predicts the region corresponding to the described object. The current implementation combines language-conditioned visual features, candidate masks, and detail refinement, and supports RRSIS-D and RefSegRS.
 
 > **Release status:** Project introduction and cover are available. Source code, pretrained weights, and complete setup instructions are being prepared. The commands below describe the local implementation and require the forthcoming code release.
 
@@ -71,10 +71,10 @@ Replace the checkpoint paths with compatible trained weights. Model weights are 
 
 ## Citation
 
-Citation information for this project will be added when available. For the original FIANet work, please refer to its [paper and citation information](https://github.com/Shaosifan/FIANet#citation).
+Citation information for this project will be added when available.
 
 ## Acknowledgements
 
-Our code builds on [FIANet](https://github.com/Shaosifan/FIANet), the implementation of *Exploring Fine-Grained Image-Text Alignment for Referring Remote Sensing Image Segmentation*. We thank its authors and the dataset contributors for sharing their work. This repository contains a modified model, not the unmodified FIANet baseline.
+We thank the authors of [FIANet](https://github.com/Shaosifan/FIANet) for making their code available, portions of which are reused in this project. We also thank the dataset contributors for sharing their work.
 
 Redistribution licensing and upstream notices will be finalized before public code release.
