@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pth
+*.pt
+*.bin
+*.safetensors
+*.zip
+*.tar.gz
+outputs/
+logs/
+nltk_data/
+bert_base_uncased/
+pretrained_weights/
+model_best/
+data/rrsisd/
+data/refsegrs/

@@ -1,1 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="600" viewBox="0 0 1600 600"><defs><linearGradient id="b"><stop stop-color="#081827"/><stop offset="1" stop-color="#204953"/></linearGradient><pattern id="g" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#a0dfdf" stroke-opacity=".08"/></pattern></defs><rect width="1600" height="600" fill="url(#b)"/><rect width="1600" height="600" fill="url(#g)"/><g font-family="Segoe UI,Arial,sans-serif"><text x="80" y="100" fill="#80e9ce" font-size="19" letter-spacing="5">EARTH · LANGUAGE · VISION</text><text x="80" y="225" fill="#f1f7fa" font-size="64" font-weight="700">Language-Grounded</text><text x="80" y="305" fill="#f1f7fa" font-size="64" font-weight="700">Remote Sensing</text><text x="84" y="385" fill="#80e9ce" font-size="34">Describe. Locate. Segment.</text><text x="84" y="520" fill="#afc5cf" font-size="19" letter-spacing="2">RRSIS-D / REFSEGRS · RESEARCH CODE</text><g transform="translate(1020 90)"><rect width="480" height="380" rx="24" fill="#122e39" stroke="#53727b"/><path d="M0 280L480 80M90 0L310 380" stroke="#3b5963" stroke-width="36"/><path d="M0 280L480 80M90 0L310 380" stroke="#8aa3ab" stroke-width="2" stroke-dasharray="10 12"/><g fill="#526d75" stroke="#91a9af"><path d="M40 50h65v95H40zM180 40h95v60h-95zM350 30h75v90h-75zM45 310h95v50H45zM355 265h80v90h-80z"/></g><path d="M240 200l75-30 32 80-75 30z" fill="#62e6be" fill-opacity=".7" stroke="#b2ffe3" stroke-width="4"/><rect x="0" y="405" width="480" height="48" rx="12" fill="#27535b"/><text x="27" y="436" fill="#e0fff4" font-size="21">“The building beside the road”</text><text x="275" y="365" fill="#aec5ce" font-size="12">CONCEPT ILLUSTRATION</text></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="600" viewBox="0 0 1600 600">
+  <defs>
+    <linearGradient id="background" x2="1" y2="1"><stop stop-color="#081827"/><stop offset="1" stop-color="#204953"/></linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#a0dfdf" stroke-opacity=".08"/></pattern>
+  </defs>
+  <rect width="1600" height="600" fill="url(#background)"/>
+  <rect width="1600" height="600" fill="url(#grid)"/>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <text x="80" y="100" fill="#80e9ce" font-size="19" letter-spacing="5">EARTH · LANGUAGE · VISION</text>
+    <text x="80" y="225" fill="#f1f7fa" font-size="88" font-weight="700">CoRE-Net</text>
+    <text x="80" y="310" fill="#f1f7fa" font-size="54" font-weight="700">Region Matching</text>
+    <text x="84" y="375" fill="#80e9ce" font-size="33">Prior-Guided Contour Refinement</text>
+    <text x="84" y="440" fill="#afc5cf" font-size="23">Referring Remote Sensing Image Segmentation</text>
+    <text x="84" y="520" fill="#afc5cf" font-size="19" letter-spacing="2">REFSEGRS / RRSIS-D · RESEARCH CODE</text>
+    <g transform="translate(1020 90)">
+      <rect width="480" height="380" rx="24" fill="#122e39" stroke="#53727b"/>
+      <path d="M0 280L480 80M90 0L310 380" stroke="#3b5963" stroke-width="36"/>
+      <path d="M0 280L480 80M90 0L310 380" stroke="#8aa3ab" stroke-width="2" stroke-dasharray="10 12"/>
+      <g fill="#526d75" stroke="#91a9af"><path d="M40 50h65v95H40zM180 40h95v60h-95zM350 30h75v90h-75zM45 310h95v50H45zM355 265h80v90h-80z"/></g>
+      <path d="M240 200l75-30 32 80-75 30z" fill="#62e6be" fill-opacity=".7" stroke="#b2ffe3" stroke-width="4"/>
+      <rect x="0" y="405" width="480" height="48" rx="12" fill="#27535b"/>
+      <text x="27" y="436" fill="#e0fff4" font-size="21">“The building beside the road”</text>
+      <text x="275" y="365" fill="#aec5ce" font-size="12">CONCEPT ILLUSTRATION</text>
+    </g>
+  </g>
+</svg>

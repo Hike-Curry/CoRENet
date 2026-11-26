@@ -1,80 +1,99 @@
-<p align="center"><img src="docs/assets/cover.svg" alt="Language-grounded remote sensing segmentation — conceptual illustration" width="100%"></p>
+<p align="center"><img src="docs/assets/cover.svg" alt="CoRE-Net cover" width="100%"></p>
 
-# Language-Grounded Remote Sensing Segmentation
+# CoRE-Net
 
-This repository presents our research on referring remote sensing image segmentation. Given an image and a natural-language description, the model predicts the region corresponding to the described object. The current implementation combines language-conditioned visual features, candidate masks, and detail refinement, and supports RRSIS-D and RefSegRS.
+**Region Matching and Prior-Guided Contour Refinement for Referring Remote Sensing Image Segmentation**
 
-> **Release status:** Project introduction and cover are available. Source code, pretrained weights, and complete setup instructions are being prepared. The commands below describe the local implementation and require the forthcoming code release.
+CoRE-Net segments a target in a remote sensing image from a natural-language description. Similar objects may match different parts of the description, and nearby edges may interfere with the final mask. The model uses semantic roles and visual evidence to match candidate regions against the full expression, then uses the resulting target prior to guide contour refinement. The implementation supports **RefSegRS** and **RRSIS-D**.
 
-## Setting Up
+This repository contains the source code for the paper's model. Dataset files, pretrained encoder weights, and trained checkpoints are not included.
 
-### Preliminaries
+## Setting up
 
-The implementation uses PyTorch, Swin Transformer, and BERT. The tested environment will be documented with the code release. Current argument parsing requires Python 3.9 or later because it uses `argparse.BooleanOptionalAction`; this is a language-version requirement, not a verified dependency configuration.
-
-### Package Dependencies
-
-Once the source code is available, clone this repository and enter its root directory:
+Create a Python 3.10 environment and install a PyTorch build compatible with your CUDA version. The project declares PyTorch 2.3 or newer and the remaining packages in `requirements.txt`.
 
 ```bash
-git clone https://github.com/Hike-Curry/core.git
-cd core
+conda create -n core-net python=3.10
+conda activate core-net
+# Install PyTorch and torchvision for your CUDA version first.
+pip install -r requirements.txt
+python -m nltk.downloader -d nltk_data punkt punkt_tab averaged_perceptron_tagger averaged_perceptron_tagger_eng
 ```
 
-Install a compatible PyTorch/CUDA environment and the packages specified in `requirements.txt`. The dependency list contains legacy packages and still requires clean-environment verification; installation instructions will be finalized after that check.
-
-### Data and Pretrained Models
-
-Prepare RRSIS-D or RefSegRS and place the required files at the paths passed to `--data-root`. The default local layout is:
+Place generic Swin-B classification weights and BERT-base-uncased files at these paths, or pass their locations through the command-line arguments:
 
 ```text
-data/                          # RRSIS-D root
-data/refsegrs/                 # RefSegRS root
-bert_base_uncased/             # BERT model and tokenizer files
-pretrained_weights/           # Generic Swin weights
-model_best/                   # Dataset-specific evaluation checkpoints
+pretrained_weights/swin_base_patch4.pth
+bert_base_uncased/config.json
+bert_base_uncased/vocab.txt
+bert_base_uncased/pytorch_model.bin
 ```
 
-Training requires compatible window-12 Swin initialization and BERT files. Dataset download links, exact directory layouts, and model download instructions will accompany the code release.
+The supplied archive does not include a clean-environment installation log, so the exact Python, CUDA, and package combination has not been independently verified for this release.
+
+## Datasets
+
+Prepare the datasets in the layout expected by the readers:
+
+```text
+data/
+  refsegrs/
+    output_phrase_train.txt
+    output_phrase_val.txt
+    output_phrase_test.txt
+    images/
+    masks/
+  rrsisd/
+    refs(unc).p
+    instances.json
+    images/
+```
+
+Use `--data-root` if your dataset is elsewhere. Obtain each dataset under its own distribution terms.
 
 ## Training
 
-For RRSIS-D:
+Both datasets use the same `train.py` entry. Select the dataset with `--dataset`:
 
 ```bash
-python -u train.py --dataset rrsisd --data-root data --vision-init pretrained_weights/swin_base_patch4.pth --select-best-by val --epochs 200 --batch-size 8 --workers 4 --output outputs/rrsisd_release
+python -u train.py --dataset refsegrs --epochs 150 --batch-size 8 --output outputs/refsegrs
+python -u train.py --dataset rrsisd --epochs 100 --batch-size 8 --output outputs/rrsisd
 ```
 
-For RefSegRS:
+Training reports training and validation metrics. The checkpoint with the highest **validation mIoU** is saved as `best/best.pth` under the selected output directory. Test data is not used for checkpoint selection.
 
-```bash
-python -u train.py --dataset refsegrs --data-root data/refsegrs --vision-init pretrained_weights/swin_base_patch4.pth --select-best-by val --epochs 200 --batch-size 8 --workers 4 --output outputs/refsegrs_release
-```
+| Setting | RefSegRS | RRSIS-D |
+| --- | ---: | ---: |
+| Epochs | 150 | 100 |
+| Visual encoder and fusion learning rate | 3e-5 | 2e-6 |
+| Text encoder learning rate | 1e-5 | 1e-6 |
+| Projection and decoder learning rate | 1e-4 | 1e-5 |
+| Maximum text tokens | 20 | 22 |
 
-Both datasets share one training entry. Checkpoints are selected using validation mIoU, with test metrics reported separately. Historical test-selected runs are development experiments and are not unbiased held-out evaluations.
+Both configurations use AdamW, weight decay 0.01, batch size 8, and 480 × 480 inputs. See `args.py` and `engine.py` for the remaining training settings.
 
 ## Testing
 
-For RefSegRS:
+Run testing with a checkpoint trained for the matching dataset:
 
 ```bash
-python -u test.py --dataset refsegrs --data-root data/refsegrs --checkpoint model_best/refsegrs_best.pth --device cuda --workers 4
+python test.py --dataset refsegrs --checkpoint outputs/refsegrs/best/best.pth
+python test.py --dataset rrsisd --checkpoint outputs/rrsisd/best/best.pth
 ```
 
-For RRSIS-D:
+Testing reports mIoU, oIoU, and precision at IoU thresholds 0.5–0.9. Use `--device cpu` when evaluating without a GPU. Checkpoint files are not included in this source release.
 
-```bash
-python -u test.py --dataset rrsisd --data-root data --checkpoint model_best/rrsisd_best.pth --device cuda --workers 4
-```
+## Code layout
 
-Replace the checkpoint paths with compatible trained weights. Model weights are not currently included. Testing defaults to CPU when `--device cuda` is omitted.
+| Path | Purpose |
+| --- | --- |
+| `train.py`, `test.py` | Training and standalone test entry points |
+| `args.py` | Shared dataset and training configuration |
+| `lib/` | Vision backbone, region matching, and contour refinement |
+| `data/` | RefSegRS and RRSIS-D readers and language processing |
+| `loss/` | Segmentation and candidate-quality losses |
+| `engine.py` | Training, validation, and checkpoint selection |
 
-## Citation
+## Citation and acknowledgements
 
-Citation information for this project will be added when available.
-
-## Acknowledgements
-
-We thank the dataset contributors for sharing their work.
-
-Redistribution licensing and upstream notices will be finalized before public code release.
+The paper's citation record will be added when available. Third-party code notices and license texts are in `THIRD_PARTY_NOTICES.txt` and `LICENSES/`.
