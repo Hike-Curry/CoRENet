@@ -10,6 +10,13 @@ This repository contains the source code for the paper's model. Dataset files, p
 
 ## Setting up
 
+Clone the repository and enter its root directory:
+
+```bash
+git clone https://github.com/Hike-Curry/CoRE-Net.git
+cd CoRE-Net
+```
+
 Create a Python 3.10 environment and install a PyTorch build compatible with your CUDA version. The project declares PyTorch 2.3 or newer and the remaining packages in `requirements.txt`.
 
 ```bash
