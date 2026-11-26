@@ -8,13 +8,39 @@ CoRE-Net segments a target in a remote sensing image from a natural-language des
 
 This repository contains the source code for the paper's model. Dataset files, pretrained encoder weights, and trained checkpoints are not included.
 
+## Framework
+
+![Overall framework of CoRE-Net](docs/assets/01_Overall.png)
+
+[Open the overall figure at full resolution](docs/assets/01_Overall.png)
+
+CoRE-Net first matches candidate regions to the full expression using semantic roles and visual evidence. The resulting target prior then guides contour refinement, helping the model distinguish the target from nearby objects and edges.
+
+<details>
+<summary>Region matching (REG)</summary>
+
+![Role- and Evidence-Guided Grounding](docs/assets/02_REG.png)
+
+REG uses target and reference-object roles together with regional image content to assess each candidate region against the full expression.
+
+</details>
+
+<details>
+<summary>Prior-guided contour refinement (PGCR)</summary>
+
+![Prior-Guided Contour Refinement](docs/assets/03_PGCR.png)
+
+PGCR uses the target prior as a spatial reference when correcting the mask boundary with local image details.
+
+</details>
+
 ## Setting up
 
 Clone the repository and enter its root directory:
 
 ```bash
-git clone https://github.com/Hike-Curry/CoRE-Net.git
-cd CoRE-Net
+git clone https://github.com/Hike-Curry/CoRENet.git
+cd CoRENet
 ```
 
 Create a Python 3.10 environment and install a PyTorch build compatible with your CUDA version. The project declares PyTorch 2.3 or newer and the remaining packages in `requirements.txt`.
@@ -103,4 +129,4 @@ Testing reports mIoU, oIoU, and precision at IoU thresholds 0.5–0.9. Use `--de
 
 ## Citation and acknowledgements
 
-The paper's citation record will be added when available. Third-party code notices and license texts are in `THIRD_PARTY_NOTICES.txt` and `LICENSES/`.
+The paper's citation record will be added when available. Licenses and notices for included third-party code are in `THIRD_PARTY_NOTICES.txt` and `LICENSES/`.
