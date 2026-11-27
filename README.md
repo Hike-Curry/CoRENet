@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/assets/cover.svg" alt="CoRE-Net cover" width="100%"></p>
+<p align="center"><img src="pic/cover.svg" alt="CoRE-Net cover" width="100%"></p>
 
 # CoRE-Net
 
@@ -10,16 +10,16 @@ This repository contains the source code for the paper's model. Dataset files, p
 
 ## Framework
 
-![Overall framework of CoRE-Net](docs/assets/01_Overall.png)
+![Overall framework of CoRE-Net](pic/01_Overall.png)
 
-[Open the overall figure at full resolution](docs/assets/01_Overall.png)
+[Open the overall figure at full resolution](pic/01_Overall.png)
 
 CoRE-Net first matches candidate regions to the full expression using semantic roles and visual evidence. The resulting target prior then guides contour refinement, helping the model distinguish the target from nearby objects and edges.
 
 <details>
 <summary>Region matching (REG)</summary>
 
-![Role- and Evidence-Guided Grounding](docs/assets/02_REG.png)
+![Role- and Evidence-Guided Grounding](pic/02_REG.png)
 
 REG uses target and reference-object roles together with regional image content to assess each candidate region against the full expression.
 
@@ -28,7 +28,7 @@ REG uses target and reference-object roles together with regional image content 
 <details>
 <summary>Prior-guided contour refinement (PGCR)</summary>
 
-![Prior-Guided Contour Refinement](docs/assets/03_PGCR.png)
+![Prior-Guided Contour Refinement](pic/03_PGCR.png)
 
 PGCR uses the target prior as a spatial reference when correcting the mask boundary with local image details.
 
@@ -133,4 +133,4 @@ Testing reports mIoU, oIoU, and precision at IoU thresholds 0.5–0.9. Use `--de
 
 ## Citation and acknowledgements
 
-The paper's citation record will be added when available. Licenses and notices for included third-party code are in `THIRD_PARTY_NOTICES.txt` and `LICENSES/`.
+The paper's citation record will be added when available. The bundled BERT tokenizer utilities are adapted from Hugging Face Transformers; their attribution and license are in `bert/README.md` and `bert/LICENSE`.
