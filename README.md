@@ -43,12 +43,21 @@ git clone https://github.com/Hike-Curry/CoRENet.git
 cd CoRENet
 ```
 
-Create a Python 3.10 environment and install a PyTorch build compatible with your CUDA version. The project declares PyTorch 2.3 or newer and the remaining packages in `requirements.txt`.
+The experimental environment reported in the paper is:
+
+| Component | Version |
+| --- | --- |
+| GPU | NVIDIA GeForce RTX 4090 |
+| Python | 3.12.3 |
+| PyTorch | 2.8.0+cu128 |
+| CUDA | 12.8 |
+
+Create the environment and install the CUDA 12.8 build of PyTorch. The PyTorch and torchvision versions follow the [official installation instructions](https://pytorch.org/get-started/previous-versions/#v280).
 
 ```bash
-conda create -n core-net python=3.10
+conda create -n core-net python=3.12.3
 conda activate core-net
-# Install PyTorch and torchvision for your CUDA version first.
+pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
 python -m nltk.downloader -d nltk_data punkt punkt_tab averaged_perceptron_tagger averaged_perceptron_tagger_eng
 ```
@@ -65,8 +74,6 @@ mkdir -p pretrained_weights bert_base_uncased
 2. Download [BERT-base-uncased from Hugging Face](https://huggingface.co/google-bert/bert-base-uncased/tree/main). Place [`config.json`](https://huggingface.co/google-bert/bert-base-uncased/resolve/main/config.json), [`vocab.txt`](https://huggingface.co/google-bert/bert-base-uncased/resolve/main/vocab.txt), and [`pytorch_model.bin`](https://huggingface.co/google-bert/bert-base-uncased/resolve/main/pytorch_model.bin) in `bert_base_uncased/`. To use another local directory, pass `--bert-dir`.
 
 These are encoder initialization weights for training. This repository does not include them or a trained CoRE-Net checkpoint.
-
-The supplied archive does not include a clean-environment installation log, so the exact Python, CUDA, and package combination has not been independently verified for this release.
 
 ## Datasets
 
@@ -108,6 +115,8 @@ Training reports training and validation metrics. The checkpoint with the highes
 | Maximum text tokens | 20 | 22 |
 
 Both configurations use AdamW, weight decay 0.01, batch size 8, and 480 × 480 inputs. See `args.py` and `engine.py` for the remaining training settings.
+
+This release provides the complete CoRE-Net model. Its total training loss is normalized as `(10 * L_seg + 2 * L_reg + L_str) / 13`, matching the paper.
 
 ## Testing
 

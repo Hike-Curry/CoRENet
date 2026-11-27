@@ -29,7 +29,6 @@ def parser(argv=None):
     p.add_argument('--random-init', action='store_true')
     p.set_defaults(method='ccsnet', max_tokens=20 if ref else 22, split_by='unc',
                    eval_sentences='first', adapter_dim=64, num_candidates=4,
-                   candidate_weight=.2, quality_weight=.2, quality_temperature=.15,
-                   quality_minimum=.1, union_weight=.1, boundary_weight=.1,
+                   quality_temperature=.15, quality_minimum=.1,
                    select_best_by='val')
     return p

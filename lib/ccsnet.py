@@ -39,7 +39,7 @@ class GroundedStage(nn.Module):
         self.fusion = DenseLanguageFusion(channels, dim)
         self.downsample = PatchMerging(channels) if downsample else None
 
-    def forward(self, x, h, w, words, valid, recompute, early_language):
+    def forward(self, x, h, w, words, valid, recompute):
         from lib.visual import visual_blocks
         run = lambda value: visual_blocks(self, value, h, w)
         x = checkpoint(run, x, use_reentrant=False) if recompute and self.training else run(x)
@@ -50,7 +50,7 @@ class GroundedStage(nn.Module):
 
 class GroundedVision(nn.Module):
 
-    def __init__(self, width=128, depths=(2, 2, 18, 2), heads=(4, 8, 16, 32), window=7, dim=64, recompute=True, early_language=True, drop_path=0.2):
+    def __init__(self, width=128, depths=(2, 2, 18, 2), heads=(4, 8, 16, 32), window=7, dim=64, recompute=True, drop_path=0.2):
         super().__init__()
         from lib.backbone import PatchEmbed
         self.patch_embed = PatchEmbed(embed_dim=width, norm_layer=nn.LayerNorm)
@@ -58,7 +58,7 @@ class GroundedVision(nn.Module):
         self.layers = nn.ModuleList((GroundedStage(width * 2 ** i, depth, heads[i], window, rates[sum(depths[:i]):sum(depths[:i + 1])], dim, i < 3) for i, depth in enumerate(depths)))
         for i in range(4):
             self.add_module(f'norm{i}', nn.LayerNorm(width * 2 ** i))
-        self.recompute, self.early_language = (recompute, early_language)
+        self.recompute = recompute
 
     def forward(self, image, words, valid):
         x = self.patch_embed(image)
@@ -66,7 +66,7 @@ class GroundedVision(nn.Module):
         x = x.flatten(2).transpose(1, 2)
         features = []
         for i, layer in enumerate(self.layers):
-            out, x = layer(x, h, w, words, valid, self.recompute, self.early_language)
+            out, x = layer(x, h, w, words, valid, self.recompute)
             features.append(getattr(self, f'norm{i}')(out).transpose(1, 2).reshape(len(x), -1, h, w))
             if layer.downsample is not None:
                 h, w = ((h + 1) // 2, (w + 1) // 2)
@@ -74,7 +74,7 @@ class GroundedVision(nn.Module):
 
 class EvidenceDecoder(nn.Module):
 
-    def __init__(self, width=128, dim=64, candidates=4, detail=True, score_mode='region', refine_conditioning=True, matched_upsampling=False):
+    def __init__(self, width=128, dim=64, candidates=4):
         super().__init__()
         self.laterals = nn.ModuleList((nn.Conv2d(width * 2 ** i, dim, 1) for i in range(4)))
         self.smooth = nn.ModuleList((conv(dim, dim) for _ in range(4)))
@@ -87,10 +87,6 @@ class EvidenceDecoder(nn.Module):
         self.mask_query = nn.Linear(dim, dim)
         self.mask_bias = nn.Linear(dim, 1)
         self.score = nn.Sequential(nn.Linear(dim * 3, dim), nn.GELU(), nn.Linear(dim, 1))
-        self.detail = detail
-        self.score_mode = score_mode
-        self.refine_conditioning = refine_conditioning
-        self.matched_upsampling = matched_upsampling
         self.rgb_detail = conv(3, dim // 2 if dim >= 16 else 8, stride=2)
         self.refine = conv(dim + (dim // 2 if dim >= 16 else 8) + 1, dim)
         self.boundary = nn.Conv2d(dim, 1, 1)
@@ -121,7 +117,6 @@ class EvidenceDecoder(nn.Module):
         weights = scores.float().softmax(-1)
         mixture = (probability * weights[..., None, None]).sum(1, keepdim=True)
         coarse = torch.logit(mixture.clamp(1e-05, 1 - 1e-05))
-        boundary = None
         detail = self.rgb_detail(image)
         high = F.interpolate(x, detail.shape[-2:], mode='bilinear', align_corners=False)
         prior = F.interpolate(coarse, detail.shape[-2:], mode='bilinear', align_corners=False)
@@ -133,18 +128,17 @@ class EvidenceDecoder(nn.Module):
         size = image.shape[-2:]
         resize = lambda value: F.interpolate(value.float(), size, mode='bilinear', align_corners=False)
         foreground = resize(foreground)
-        return dict(logits=torch.cat((torch.zeros_like(foreground), foreground), 1), candidate_logits=resize(masks), candidate_weights=weights, candidate_scores=scores, pre_refine_logit=resize(coarse)[:, 0], auxiliary_logits=[head(level).float() for head, level in zip(self.auxiliary, pyramid)], boundary_logits=resize(boundary)[:, 0] if boundary is not None else None)
+        return dict(logits=torch.cat((torch.zeros_like(foreground), foreground), 1), candidate_logits=resize(masks), candidate_weights=weights, candidate_scores=scores, pre_refine_logit=resize(coarse)[:, 0], auxiliary_logits=[head(level).float() for head, level in zip(self.auxiliary, pyramid)], boundary_logits=resize(boundary)[:, 0])
 
 class CCSNet(nn.Module):
 
-    def __init__(self, text_encoder, width=128, depths=(2, 2, 18, 2), heads=(4, 8, 16, 32), window=7, dim=64, candidates=4, language_dim=768, recompute=True, early_language=True, role_embedding=True, detail=True, drop_path=0.2, score_mode='region', refine_conditioning=True, matched_upsampling=False):
+    def __init__(self, text_encoder, width=128, depths=(2, 2, 18, 2), heads=(4, 8, 16, 32), window=7, dim=64, candidates=4, language_dim=768, recompute=True, drop_path=0.2):
         super().__init__()
         self.text_encoder = text_encoder
         self.words = nn.Linear(language_dim, dim)
         self.role_embedding = nn.Parameter(torch.randn(len(ROLES), dim) * 0.02)
-        self.use_roles = role_embedding
-        self.visual = GroundedVision(width, depths, heads, window, dim, recompute, early_language, drop_path)
-        self.decoder = EvidenceDecoder(width, dim, candidates, detail, score_mode, refine_conditioning, matched_upsampling)
+        self.visual = GroundedVision(width, depths, heads, window, dim, recompute, drop_path)
+        self.decoder = EvidenceDecoder(width, dim, candidates)
 
     def forward(self, batch):
         valid = batch['attention'].bool()
@@ -163,18 +157,17 @@ def loss_function(result, truth, args):
     seg = per_mask_loss(result['logits'][:, 1], truth).mean()
     candidates = result['candidate_logits']
     candidate = per_mask_loss(candidates, truth[:, None].expand_as(candidates)).min(1).values.mean()
-    quality = seg.new_zeros(())
     quality, _ = quality_loss(result['candidate_scores'], candidate_quality(candidates, truth), args.quality_temperature, args.quality_minimum)
     mixture = per_mask_loss(result['pre_refine_logit'], truth).mean()
     union = torch.logit(candidates.float().sigmoid().amax(1).clamp(1e-05, 1 - 1e-05))
     union_loss = per_mask_loss(union, truth).mean()
     auxiliary = sum((per_mask_loss(F.interpolate(value, truth.shape[-2:], mode='bilinear', align_corners=False)[:, 0], truth).mean() for value in result['auxiliary_logits'])) / len(result['auxiliary_logits'])
-    boundary = seg.new_zeros(())
-    if result['boundary_logits'] is not None:
-        target = truth[:, None]
-        edges = (F.max_pool2d(target, 3, 1, 1) - -F.max_pool2d(-target, 3, 1, 1))[:, 0]
-        boundary = per_mask_loss(result['boundary_logits'], edges).mean()
-    total = seg + args.candidate_weight * candidate + args.quality_weight * quality + 0.1 * mixture + 0.2 * auxiliary + args.union_weight * union_loss + args.boundary_weight * boundary
+    target = truth[:, None]
+    edges = (F.max_pool2d(target, 3, 1, 1) - -F.max_pool2d(-target, 3, 1, 1))[:, 0]
+    boundary = per_mask_loss(result['boundary_logits'], edges).mean()
+    regional = candidate + quality + auxiliary
+    structure = mixture + union_loss + boundary
+    total = (10 * seg + 2 * regional + structure) / 13
     return (total, dict(seg=seg, candidate=candidate, quality=quality, mixture=mixture, multiscale=auxiliary, union=union_loss, boundary=boundary))
 
 def initialize_visual(model, path):
@@ -212,7 +205,7 @@ def build_model(args, initialize=True):
     text = BertModel.from_pretrained(args.bert_dir, local_files_only=True) if initialize and (not args.random_init) else BertModel(config)
     if args.gradient_checkpointing:
         text.gradient_checkpointing_enable()
-    model = CCSNet(text, width, depths, heads, args.window_size, args.adapter_dim, args.num_candidates, config.hidden_size, args.gradient_checkpointing, True, True, True, score_mode='region', refine_conditioning=True, matched_upsampling=False)
+    model = CCSNet(text, width, depths, heads, args.window_size, args.adapter_dim, args.num_candidates, config.hidden_size, args.gradient_checkpointing)
     report = dict(task_checkpoint_used=False, epoch_minus_one=False, bert='generic_bert' if initialize and (not args.random_init) else 'random_or_resume')
     if initialize and (not args.random_init):
         report['visual'] = initialize_visual(model, args.vision_init)
