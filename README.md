@@ -86,7 +86,7 @@ data/
     images/
 ```
 
-Use `--data-root` if your dataset is elsewhere. Obtain each dataset under its own distribution terms.
+Download [RefSegRS](https://huggingface.co/datasets/JessicaYuan/RefSegRS) and [RRSIS-D](https://github.com/Lsan2401/RMSIN#datasets) from their original projects, then organize the files as shown above. Use `--data-root` if your dataset is elsewhere, and follow each dataset's distribution terms.
 
 ## Training
 
