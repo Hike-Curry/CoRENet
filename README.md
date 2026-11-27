@@ -53,14 +53,18 @@ pip install -r requirements.txt
 python -m nltk.downloader -d nltk_data punkt punkt_tab averaged_perceptron_tagger averaged_perceptron_tagger_eng
 ```
 
-Place generic Swin-B classification weights and BERT-base-uncased files at these paths, or pass their locations through the command-line arguments:
+## Initialization weights for training
 
-```text
-pretrained_weights/swin_base_patch4.pth
-bert_base_uncased/config.json
-bert_base_uncased/vocab.txt
-bert_base_uncased/pytorch_model.bin
+Create the two directories used by the default training configuration:
+
+```bash
+mkdir -p pretrained_weights bert_base_uncased
 ```
+
+1. Download the official [Swin-B ImageNet-1K classification weights (window size 12, 384 × 384)](https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window12_384.pth). Save the checkpoint as `pretrained_weights/swin_base_patch4.pth`. The downloaded file is named `swin_base_patch4_window12_384.pth`; you can rename it or pass its original path with `--vision-init`. Use a classification checkpoint, not a task-specific segmentation checkpoint.
+2. Download [BERT-base-uncased from Hugging Face](https://huggingface.co/google-bert/bert-base-uncased/tree/main). Place [`config.json`](https://huggingface.co/google-bert/bert-base-uncased/resolve/main/config.json), [`vocab.txt`](https://huggingface.co/google-bert/bert-base-uncased/resolve/main/vocab.txt), and [`pytorch_model.bin`](https://huggingface.co/google-bert/bert-base-uncased/resolve/main/pytorch_model.bin) in `bert_base_uncased/`. To use another local directory, pass `--bert-dir`.
+
+These are encoder initialization weights for training. This repository does not include them or a trained CoRE-Net checkpoint.
 
 The supplied archive does not include a clean-environment installation log, so the exact Python, CUDA, and package combination has not been independently verified for this release.
 
