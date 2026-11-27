@@ -142,4 +142,6 @@ Testing reports mIoU, oIoU, and precision at IoU thresholds 0.5–0.9. Use `--de
 
 ## Citation and acknowledgements
 
-The paper's citation record will be added when available. The bundled BERT tokenizer utilities are adapted from Hugging Face Transformers; their attribution and license are in `bert/README.md` and `bert/LICENSE`.
+The paper's citation record will be added when available.
+
+This repository builds on [RMSIN](https://github.com/Lsan2401/RMSIN) and [LAVT](https://github.com/yz93/LAVT-RIS). We thank the authors for making their code publicly available.
